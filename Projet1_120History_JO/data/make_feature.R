@@ -52,5 +52,16 @@ fill_nan <- function(df) {
   return(df)  # Retourner le dataframe modifié
 }
 
-drop_
 
+clean_text2 <- function(df) {
+  col_names <- get_colnames(df)
+  
+  for (a in col_names) {
+    if (is.character(df[[a]])) {
+      df[[a]] <- tolower(df[[a]])  # Convertir en minuscules
+      df[[a]] <- gsub("[@!/:&$#]", "", df[[a]], ignore.case = TRUE)  # Supprimer les caractères spécifiés
+    }
+  }
+  
+  return(df)
+}
