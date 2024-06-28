@@ -15,26 +15,42 @@ check_nan<-function(data)
   return(a)
   
 }
-
-fill_nan<-function(data)
-{
-  col_name=get_colnames(data)
-  l=length(col_name)
-  for(i in 1:l) 
-  {
-    if (typeof(data[[col_name[i]]])=='character' | typeof(data[[col_name[i]]])=='integer')
-      {
-        fill_value=mode(data[[col_name[i]]])
-        na.fill(data[[col_name[i]]],fill_value)
-      }
-    else if  (typeof(data[[col_name[i]]])=='double')
-      {
-      fill_value=mean(data[[col_name[i]]])
-      na.fill(data[[col_name[i]]],fill_value)
-     }
-    
-  }
-  return(colSums(is.na(data)))
-  
+# Fonction pour calculer le mode
+get_mode <- function(v) {
+  v <- v[!is.na(v)]  # Retirer les NA
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
 }
+
+# Fonction pour obtenir les noms des colonnes
+get_colnames <- function(df) {
+  return(names(df))
+}
+
+# Fonction pour calculer le mode
+get_mode <- function(v) {
+  v <- v[!is.na(v)]
+  uniqv <- unique(v)
+  return(uniqv[which.max(tabulate(match(v, uniqv)))])
+}
+
+# Fonction pour remplir les valeurs manquantes
+fill_nan <- function(df) {
+  Col_names <- get_colnames(df)
+  
+  for (a in Col_names) {
+    if (is.character(df[[a]]) || is.factor(df[[a]]) || is.integer(df[[a]])) {
+      fill_value <- get_mode(df[[a]])
+      df[[a]] <- na.fill(df[[a]], fill_value)
+    } else if (is.numeric(df[[a]])) {
+      fill_value <- mean(df[[a]], na.rm = TRUE)
+      df[[a]] <- na.fill(df[[a]], fill_value)
+    }
+    print(fill_value)
+  }
+  
+  return(df)  # Retourner le dataframe modifié
+}
+
+drop_
 
