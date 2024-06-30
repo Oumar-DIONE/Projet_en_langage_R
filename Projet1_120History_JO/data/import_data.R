@@ -4,6 +4,7 @@ load_data<-function(file_name)
 { 
   path_name<-paste0(data_dir,file_name)
   data<- read.csv(path_name)
+  print(str(data))
   return(data)
 }
 raw_data<-load_data(file_name)
