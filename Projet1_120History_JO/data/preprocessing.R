@@ -28,4 +28,15 @@ preproc1<-function(data)
   return(df)
   
 }
-model1_work_df<-preproc1(data_year_above_2000)
+model1_work_df<-preproc1(perfect_data[perfect_data$Year>2010,])
+
+prepocess2<-function(data)
+{
+  df <- data[, c("Medal","Sex", "Age","Height","Weight","Season")]
+  df$category_Medal <- as.numeric(as.factor(df$Medal))
+  df<-binarizer(df,"Sex")
+  df<-binarizer(df,"Season")
+  df<-df[,!names(df) %in% c('Medal')]
+  return(df)
+  
+}
