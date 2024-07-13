@@ -1,3 +1,8 @@
 *.csv
 .Rproj.user
 *.yaml
+# Exclure les élements de configurations
+Projet3__BostonHouse/data/configure_S3_connexion.R
+Projet3__BostonHouse/configuration/config.R
+# les fichiers des variables d'environnements
+*.env
