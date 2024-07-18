@@ -22,9 +22,23 @@ show_bucket_names<-function(minio=my_minio)
 
 show_bucket_names()
 
-download_data_from_S3<-function(data_local_path="'boston_data.csv'",data_path_in_S3='Boston_House_price/Boston-house-price-data.csv',bucket_name='odione',minio_object=my_minio)
+download_data_from_S3<-function(data_local_path='boston_data.csv',data_path_in_S3='Boston_House_price/Boston-house-price-data.csv',bucket_name='odione',minio_object=my_minio)
 {
   reponse<- minio_object$get_object(Bucket =bucket_name ,Key =data_path_in_S3 )
   writeBin(reponse$Body,data_local_path )
-  print(paste("Téléchargement ,depuis S3, réussi et données situées localment à ", download_path))
+  print(paste("Téléchargement ,depuis S3, réussi et données situées localment à ", data_local_path))
+}
+
+
+
+
+# Fonction pour uploader un fichier vers S3
+upload_data_upon_S3 <- function(data_local_path='boston_data.csv',data_path_in_S3='Boston_House_price/data_from_local.csv',bucket_name='odione',minio_object=my_minio) 
+  {
+  my_minio$put_object(
+    Bucket = bucket_name,
+    Key = data_path_in_S3,
+    Body = data_local_path
+  )
+  print(paste("Upload réussi : ", data_path_in_S3))
 }

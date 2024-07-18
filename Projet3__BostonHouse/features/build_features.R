@@ -32,84 +32,108 @@ mode_fun <- function(x) {
   }
 }
 
-encoder<-function(df,cols_to_encode)
-{
-  n<-length(cols_to_encode)
-  if(n>0)
-  {
-    for(i in 1:n)
-    {
-      col_<-cols_to_encode[i]
-      p<-length(unique(df[[col_]]))
-      print(paste(("p ",p)))
-      df[[col_]]<-factor(df[[col_]],levels = 1:p)
-    }
-      
-      
-  }
-  print("encodage bien fait!")
-  return(df)
-}
-normalizator<-function(df, cols_to_norm)
-{
-  n<-length(cols_to_norm)
-  if(n>0)
-  {
-    for(i in 1:n)
-    {
-      col_<-cols_to_norm[i]
-      min_<-min(df[[col_]])
-      max_<-max(df[[col_]])
-      df[[col_]]<-(df[[col_]]-min_)/(max_-min_+0.0001)
-    }
-    
-    
-  }
-  print("Normalisation bien fait!")
-  return(df)
+encoder <- function(data_, cols_to_encode) {
+  # Créer une copie des données
+  df <- data_
   
+  # Vérifier que les colonnes spécifiées existent dans le DataFrame
+  missing_cols <- setdiff(cols_to_encode, colnames(df))
+  if (length(missing_cols) > 0) {
+    stop(paste("Les colonnes suivantes ne sont pas présentes dans le DataFrame:", paste(missing_cols, collapse = ", ")))
+  }
+  
+  # Si il y a des colonnes à encoder
+  if (length(cols_to_encode) > 0) {
+    # Convertir les colonnes spécifiées en facteurs
+    df[cols_to_encode] <- lapply(df[cols_to_encode], as.factor)
+  }
+  
+  # Message de confirmation
+  print("Encodage bien fait!")
+  
+  # Retourner le DataFrame modifié
+  return(df)
 }
-encoder(boston_data,names(boston_data)[unname(sapply(boston_data, function(x) is.double(x)))])
+
+normalizator <- function(df, cols_to_norm) {
+  # Nombre de colonnes à normaliser
+  n <- length(cols_to_norm)
+  
+  if (n > 0) {
+    for (col_name in cols_to_norm) {
+      # Calculer le minimum et le maximum de la colonne
+      col_min <- min(df[[col_name]], na.rm = TRUE)
+      col_max <- max(df[[col_name]], na.rm = TRUE)
+      
+      # Eviter la division par zéro
+      if (col_min != col_max) {
+        # Normaliser la colonne
+        df[[col_name]] <- (df[[col_name]] - col_min) / (col_max - col_min)
+      } else {
+        warning(paste("La colonne", col_name, "a une valeur constante et ne peut pas être normalisée."))
+        df[[col_name]] <- 0.5 # Par exemple, on peut assigner une valeur constante comme 0.5
+      }
+    }
+  }
+  
+  print("Normalisation bien faite!")
+  return(df)
+}
+
 
 fillNa_fun <- function(x)
-{
-  if (is.double(x)) 
+{ 
+  if (sum(is.na(x))>0)
+  {
+    if (is.double(x)) 
     {
-    x[is.na(x)] <- mean(x, na.rm = TRUE)
+      x[is.na(x)] <- mean(x, na.rm = TRUE)
     }
-  else if( is.factor(x) | is.numeric(x))
-   {
-    mode_value<-mode_fun(x)
-    x[is.na(x)] <- mode_value
-   }
+    else if( is.factor(x) | is.numeric(x))
+    {
+      mode_value<-mode_fun(x)
+      x[is.na(x)] <- mode_value
+    }
+  }
+  
   return(x)
 }
 
 fillNull_fun <- function(x)
-{
-  if (is.double(x)) 
+{ 
+  if (sum(is.null(x))>0)
   {
-    x[is.null(x)] <- mean(x, na.rm = TRUE)
+    if (is.double(x)) 
+    {
+      x[is.null(x)] <- mean(x, na.rm = TRUE)
+    }
+    else if( is.factor(x) | is.numeric(x))
+    {
+      mode_value<-mode_fun(x)
+      x[is.null(x)] <- mode_value
+    }
+    
   }
-  else if( is.factor(x) | is.numeric(x))
-  {
-    mode_value<-mode_fun(x)
-    x[is.null(x)] <- mode_value
-  }
+  
   return(x)
 }
 
 fillInfinity_fun <- function(x)
 {
-  if (is.double(x)) 
+  if(sum(is.infinite(x)>0))
   {
-    x[is.infinite(x)] <- mean(x, na.rm = TRUE)
+    if (is.double(x)) 
+    {
+      x[is.infinite(x)] <- mean(x, na.rm = TRUE)
+    }
+    else if( is.factor(x) | is.numeric(x))
+    {
+      mode_value<-mode_fun(x)
+      x[is.infinite(x)] <- mode_value
+    }
   }
-  else if( is.factor(x) | is.numeric(x))
-  {
-    mode_value<-mode_fun(x)
-    x[is.infinite(x)] <- mode_value
-  }
+  return(x)
+
 }
 
 
@@ -129,8 +153,8 @@ preporcess_data<-function(df)
   
 { 
   # recupérer les colonnes de type integer puiq de type doucble
-  cols_to_encode_=names(boston_data)[unname(sapply(boston_data, function(x) is.integer(x)))]
-  cols_to_norm_=names(boston_data)[unname(sapply(boston_data, function(x) is.double(x)))]
+  cols_to_encode_=names(df)[unname(sapply(df, function(x) is.integer(x)))]
+  cols_to_norm_=names(df)[unname(sapply(df, function(x) is.double(x)))]
   df1<-encoder(df,cols_to_encode = cols_to_encode_)
   df2<-normalizator(df1,cols_to_norm = cols_to_norm_)
   df3<-managed_undesired_value(df2)
@@ -141,9 +165,4 @@ preporcess_data<-function(df)
 
 boston_data<-get_data()
 boston_transformed_data<-preporcess_data(boston_data)
-  # ** Taches
-# 1) convertir les types int en factors
-# 2) normaliser les variables réelles avec la normalisations min-Max si la variables est une variable de mesures positives
-# 3)checker s'il y' a des valeurs Null, nan , infity (aberrantes) puis soit supprimer la ligne correspondant soit la remplace la valeur
-#manquante par la moyenne pour numericla variables ou par le mode pour les factors
-
+  
