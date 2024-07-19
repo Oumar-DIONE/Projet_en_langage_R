@@ -55,23 +55,30 @@ encoder <- function(data_, cols_to_encode) {
   return(df)
 }
 
+
 normalizator <- function(df, cols_to_norm) {
   # Nombre de colonnes à normaliser
   n <- length(cols_to_norm)
   
-  if (n > 0) {
-    for (col_name in cols_to_norm) {
+  if (n > 0) 
+    {
+    for (col_name in cols_to_norm) 
+      {
       # Calculer le minimum et le maximum de la colonne
       col_min <- min(df[[col_name]], na.rm = TRUE)
       col_max <- max(df[[col_name]], na.rm = TRUE)
+      if (col_max>1 & col_min>-1)  # # we only normalise which have value out side of (-,1)
+        {
+        # Eviter la division par zéro
+        if (col_min != col_max) {
+          # Normaliser la colonne
+          df[[col_name]] <- (df[[col_name]] - col_min) / (col_max - col_min)
+        } else {
+          warning(paste("La colonne", col_name, "a une valeur constante et ne peut pas être normalisée."))
+          df[[col_name]] <- 0.5 # Par exemple, on peut assigner une valeur constante comme 0.5
+        }
       
-      # Eviter la division par zéro
-      if (col_min != col_max) {
-        # Normaliser la colonne
-        df[[col_name]] <- (df[[col_name]] - col_min) / (col_max - col_min)
-      } else {
-        warning(paste("La colonne", col_name, "a une valeur constante et ne peut pas être normalisée."))
-        df[[col_name]] <- 0.5 # Par exemple, on peut assigner une valeur constante comme 0.5
+      
       }
     }
   }
@@ -79,6 +86,7 @@ normalizator <- function(df, cols_to_norm) {
   print("Normalisation bien faite!")
   return(df)
 }
+
 
 
 fillNa_fun <- function(x)
