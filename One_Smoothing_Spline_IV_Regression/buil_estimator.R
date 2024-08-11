@@ -1,3 +1,4 @@
+library("ggplot2")
 Compute_little_omega_fun<-function(z)
 {
   if (z==0)
@@ -56,14 +57,7 @@ compute_E_Tild_matrix<-function(lambda_,E, Omega_matrix)
   return(E_tild)
 }
 
-p<-1
-n<-2
-b<-n*p
-M1<-1:b
-n_square<-n*n
-Z<-matrix(1:b,nrow=n)
-W<-0.9*Z-0.05
-Y<-2*Z+1
+
 
 compute_P_matrix<-function(Z_data,E_tild)
 { 
@@ -72,20 +66,24 @@ compute_P_matrix<-function(Z_data,E_tild)
   P<-Z_data%*%(Z_t%*%(inv_E_Tild%*%Z_data))%*%(Z_t%*%inv_E_Tild)
   return(P)
 }
-P<-compute_P_matrix(Z,E)
+#P<-compute_P_matrix(Z,E)
 
-estimated_coefs<-function(Y_data,Z_data,W_data,lambda_)
+get_g_hat<-function(Y_data,Z_data,W_data,lambda_)
 {
   n<-length(Y_data)
   Omega_matrix_<-compute_omage_matrix(W_data)
   E_<-compute_E_matrix(Z_data)
   E_tild_<-compute_E_Tild_matrix(lambda_,E_,Omega_matrix_)
-  P_<-compute_P_matrix(Z_data,E)
+  P_<-compute_P_matrix(Z_data,E_)
   inv_E_tild_<-solve(E_tild_)
   I_matrix<-diag(n)
   g_hat<- (P_+E_%*%inv_E_tild_%*%(I_matrix-P_))%*%Y_data
   return(g_hat)
 }
 
-M2<-c(0,1)
-estimated_coefs(Y,Z,W,0.05)
+#M2<-c(0,1)
+
+
+g_hat<-get_g_hat(Y_data,Z_data,W_data,0.05)
+residus<-Y_data-g_hat
+plot(residus)

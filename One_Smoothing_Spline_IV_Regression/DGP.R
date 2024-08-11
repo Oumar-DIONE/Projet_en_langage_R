@@ -23,7 +23,15 @@ get_input_data<-function(a,b,N)
   Epsilon_sample<-(a*V_sample+Eta_sample)/sqrt(1+a**2)
   Z_sample<-(b*W_sample+V_sample)/sqrt(1+b**2)
   Y_sample <- sapply(seq_along(Z_sample), function(i) get_y(Z_sample[i], Epsilon_sample[i]))
-  return(Y_sample)
+  Y_sample<-matrix(Y_sample,ncol = 1)
+  Z_sample<-matrix(Z_sample,ncol = 1)
+  W_sample<-matrix(W_sample,ncol = 1)
+  return(list(output=Y_sample,input=Z_sample,Iv=W_sample))
 
 }
-Y_data<-get_input_data(a,beta,N_sample)
+my_sample<-get_input_data(a,beta,N_sample)
+Y_data<-my_sample$output
+Z_data<-my_sample$input
+W_data<-my_sample$Iv
+
+
