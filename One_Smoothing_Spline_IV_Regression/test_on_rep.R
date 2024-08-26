@@ -1,6 +1,35 @@
 nrcore <- 40
 cl <- makeCluster(mc <- getOption("cl.cores", nrcore))
 registerDoParallel(cl)
+set.seed(1234567) 
+
+rep_fun_good<-function(n=2,gnrep=3)
+{
+  tic()
+  res_test<- foreach(k = 1:gnrep, .combine='rbind', .errorhandling = 'remove') %dorng%{
+    w <- rnorm(n)
+    v <- rnorm(n)
+    e <- rnorm(n)
+    r<-rbind(w=w,v=v,e=e)
+  }
+  toc()
+  
+  nlig<-nrow(res_test)
+  ncol<-ncol(res_test)
+  sample<-res_test[1:nlig,1:ncol]
+  return(sample)
+}
+my_sample<-rep_fun_good()
+stopCluster(cl)
+print(my_sample)
+
+
+
+
+
+nrcore <- 40
+cl <- makeCluster(mc <- getOption("cl.cores", nrcore))
+registerDoParallel(cl)
 set.seed(1234567)
 
 get_res <- function(p = 2) { 
@@ -118,3 +147,4 @@ if (length(results) > 0) {
   print("Iteration 1 data:")
   print(iteration1)
 }
+---------------------
