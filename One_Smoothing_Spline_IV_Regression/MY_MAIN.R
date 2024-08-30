@@ -10,10 +10,10 @@ library(parallel)
 library(doParallel)
 library(doRNG)
 enableJIT(1)
-N <- c(30,30) #c(400,400)
-Cases <- c(2,3)
-Rhouv <- c(.8,.8)
-Rhoxw <- c(.7,.7)
+N <- rep(50,8) #c(400,400)
+Cases <- 1:8   #c(2,3)
+Rhouv <-   seq(0.5,0.8,length=8)#c(.8,.8)
+Rhoxw <- seq(0.7,0.9,length=8)  #c(.7,.7)
 kernel <- "laplace"
 
 #N <- c(200,400,200,400,200,400, 200,400,200, 400, 200, 400)
@@ -33,8 +33,7 @@ for(j in 1:length(N)){
   set.seed(1234567)
   n <- as.numeric(N[j])
   sdu <- 1
-  ll <- 200
-  ll <- 3 #400
+  ll <- 20 #400
   pmin <- .00001
   pmax <- .7
   pp <- seq(pmin,pmax,length=ll)
@@ -233,7 +232,6 @@ print(summary(loptgal))
   
   
 
-"""
 
 
 
