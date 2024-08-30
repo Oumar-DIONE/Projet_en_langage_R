@@ -88,7 +88,7 @@ fun.prime <- function(x,case=1){
          x*sqrt(2),
          sqrt(3*sqrt(3))*(1-x^2)*exp(-(x^2)/2),
          sqrt(3)*(sin(pi*x/2)+(x*pi/2)*cos(pi*x/2)),
-         4*exp(-abs(x)) , 
+         4*exp(-abs(x))*ifelse(x>0,-1,1) , 
          log(abs(x-1)+1)*ifelse(x>1,1,-1)*sqrt(10/3),
          sqrt(2)*( cos(pi*x)-pi*x*sin(pi*x) )
   )
