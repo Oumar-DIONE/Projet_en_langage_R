@@ -35,3 +35,4 @@ Sécurité du token : Gardez votre token d'accès personnel en sécurité. Ne le
 Mise à jour du token : Si nécessaire, vous pouvez toujours revenir aux paramètres de votre compte pour générer un nouveau token ou en régénérer un existant.
 
 En suivant ces étapes, vous pourrez continuer à travailler sur votre dépôt Git localement tout en utilisant un token d'accès personnel pour les opérations git push, ce qui simplifie le processus sans compromettre la sécurité.
+
