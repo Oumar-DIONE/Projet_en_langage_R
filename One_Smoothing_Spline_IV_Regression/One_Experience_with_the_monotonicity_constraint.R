@@ -48,40 +48,46 @@ bigmativ <- bmat(l,emat,tmat,W,n)
 dim(x)
 # Installer CVXR si ce n'est pas déjà fait
 # install.packages("CVXR")
+
+toc()
+
 library(CVXR)
 
-# Définir les variables
-p <- 2    # Supposons p=5 pour l'exemple
-m<-n # Supposons n=1 pour l'exemple
-p_vector <- runif(m)  # Exemple de vecteur p de taille m
-Y <-  fun(x,case)  + u  # Exemple de vecteur Y de taille m
+# Dimensions
+m <- 200  # Dimension de v (et lignes de Y)
+p <- 2    # Nombre d'éléments supplémentaires à ajouter à p_Y
+
+# Définir les variables d'optimisation
+v <- Variable(m)  # Variable pour l'optimisation
+
+# Exemple de matrice Y de taille (m, n)
+ 
+
 C <- D_0_S_mat  # Matrice C de dimension (m, m + p)
 b <- 1  # b = 1 selon votre contrainte
+print(length(v))  # Cela devrait donner 200
+print(length(Y)) 
+# Produit d'Hadamard entre v et Y
+v_Y_hadamard <- v * Y  # Produit élément par élément (Hadamard)
+print(length(v_Y_hadamard))
 
-# Variable d'optimisation
-v <- Variable(m)
+# Compléter v_Y_vector avec des zéros pour obtenir un vecteur de taille (m + p)
+v_Y_extended <- c(v_Y_hadamard, rep(0, p))  # Taille (m + p)
+print(length(v_Y_extended))
+# Convertir v_Y_extended en objet CVXR Constant
+v_Y_extended_cvxr <- Constant(v_Y_extended)
 
-# Définir l'objectif f_0(v)
-objective <- Minimize(n - sum(sqrt(n * v)))
+# Définir l'objectif (exemple simple)
+objective <- Minimize(sum(v))  # Changez cela selon votre objectif
 
 # Définir les contraintes
-constraints <- list(v >= 0, sum(v) == 1)
+constraints <- list(v >= 0, sum(v) == 1)  # Ajoutez d'autres contraintes si nécessaire
 
-# Produit d'Hadamard entre p et Y
-p_Y <- v * Y  # vecteur de taille m
+# Ajouter la contrainte sur p_Y
+constraints <- append(constraints, list(C %*% v_Y_extended_cvxr >= pracma::zeros(200)))
 
-# Compléter p_Y par des zéros pour obtenir un vecteur de taille m + p
-p_Y_extended <- c(p_Y, rep(0, p))  # vecteur de taille (m + p)
-print(length(p_Y_extended))
-# Convertir p_Y_extended en objet CVXR Constant pour pouvoir faire le produit matriciel
-p_Y_extended_cvxr <- Constant(p_Y_extended)
-# Ajouter la contrainte supplémentaire d'inégalité : C * (p * Y, 0) <= 0
-constraints <- append(constraints, list(C %*% p_Y_extended_cvxr >= 0))
-
-dim(C)
-# Formuler le problème d'optimisation
+# Formuler et résoudre le problème d'optimisation
 problem <- Problem(objective, constraints)
-
 result <- tryCatch({
   solve(problem)
 }, error = function(e) {
@@ -89,6 +95,7 @@ result <- tryCatch({
   NULL
 })
 
+# Afficher les résultats
 if (!is.null(result)) {
   cat("La solution optimale est:\n")
   print(result$getValue(v))
@@ -98,5 +105,52 @@ if (!is.null(result)) {
   cat("Erreur lors de la résolution du problème.\n")
 }
 
-toc()
 
+print(dim(C))
+print(length(v_Y_extended_cvxr))
+length(Y)
+
+
+
+
+
+library(CVXR)
+
+# Définir la taille
+n <- 200  # Par exemple, n colonnes pour Y
+p <- 2  # Ajuste cette valeur selon le problème réel
+
+# Créer les variables
+p_var <- Variable(n)
+Y <-  fun(x,case)  + u  # Y doit être une constante dans ce cas, tu peux le définir comme un vecteur fixe
+A <- D_0_S_mat [1:n,1:n]# Remplis cette matrice avec tes données spécifiques
+print(length(Y))
+print(dim(A))
+# Fonction objectif
+objectif <- n - sum(sqrt(n * p_var))
+
+# Construire le vecteur combiné pour la contrainte matricielle
+# Utiliser une variable pour les zéros supplémentaires
+p_Y <- p_var * Y
+
+
+
+
+# Définir les contraintes
+contraintes <- list(
+  sum(p_var) == 1,                    # La somme des p_i est égale à 1
+  p_var >= 0,                         # Chaque p_i est >= 0
+  A %*% p_Y >= 0              # La contrainte matricielle
+)
+# Formuler le problème
+probleme <- Problem(Minimize(objectif), contraintes)
+
+# Résoudre le problème
+resultat <- solve(probleme)
+
+# Afficher les résultats
+print(resultat$getValue(p_var))
+
+print(p+n)
+print(dim(A))
+print(dim(D_0_S_mat))
