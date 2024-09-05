@@ -1,6 +1,8 @@
 # dans ce script , je vais générer des données selon le DGP puis faire une oprimisation afin de vérifier que
 # mmon script sur le monotonicity marcher pour chaque scénario/expérience lors de la simulations
 # Monte Carloe sur le script fine
+# Installer CVXR si ce n'est pas déjà fait
+# install.packages("CVXR")
 rm(list=ls())
 source("Helper_functions.R")
 source("Smoothing_splines_under_monotonicity.R")
@@ -8,6 +10,8 @@ library(pracma)
 library(compiler)
 #library(MASS)
 #library(matrixcalc)
+
+# Step1 : retrive Dta
 N <- 200 #c(400,400)
 Cases <- 3   #c(2,3)
 Rhouv <-  0.8 #seq(0.5,0.8,length=8)#c(.8,.8)
@@ -46,73 +50,9 @@ emat <- mats$emat
 D_0_S_mat<-retrieve_D_0_S_matrix(W,mats,x)
 bigmativ <- bmat(l,emat,tmat,W,n)
 dim(x)
-# Installer CVXR si ce n'est pas déjà fait
-# install.packages("CVXR")
-
-toc()
-
-library(CVXR)
-
-# Dimensions
-m <- 200  # Dimension de v (et lignes de Y)
-p <- 2    # Nombre d'éléments supplémentaires à ajouter à p_Y
-
-# Définir les variables d'optimisation
-v <- Variable(m)  # Variable pour l'optimisation
-
-# Exemple de matrice Y de taille (m, n)
- 
-
-C <- D_0_S_mat  # Matrice C de dimension (m, m + p)
-b <- 1  # b = 1 selon votre contrainte
-print(length(v))  # Cela devrait donner 200
-print(length(Y)) 
-# Produit d'Hadamard entre v et Y
-v_Y_hadamard <- v * Y  # Produit élément par élément (Hadamard)
-print(length(v_Y_hadamard))
-
-# Compléter v_Y_vector avec des zéros pour obtenir un vecteur de taille (m + p)
-v_Y_extended <- c(v_Y_hadamard, rep(0, p))  # Taille (m + p)
-print(length(v_Y_extended))
-# Convertir v_Y_extended en objet CVXR Constant
-v_Y_extended_cvxr <- Constant(v_Y_extended)
-
-# Définir l'objectif (exemple simple)
-objective <- Minimize(sum(v))  # Changez cela selon votre objectif
-
-# Définir les contraintes
-constraints <- list(v >= 0, sum(v) == 1)  # Ajoutez d'autres contraintes si nécessaire
-
-# Ajouter la contrainte sur p_Y
-constraints <- append(constraints, list(C %*% v_Y_extended_cvxr >= pracma::zeros(200)))
-
-# Formuler et résoudre le problème d'optimisation
-problem <- Problem(objective, constraints)
-result <- tryCatch({
-  solve(problem)
-}, error = function(e) {
-  message("Error occurred: ", e$message)
-  NULL
-})
-
-# Afficher les résultats
-if (!is.null(result)) {
-  cat("La solution optimale est:\n")
-  print(result$getValue(v))
-  cat("La valeur de l'objectif est:\n")
-  print(result$value)
-} else {
-  cat("Erreur lors de la résolution du problème.\n")
-}
 
 
-print(dim(C))
-print(length(v_Y_extended_cvxr))
-length(Y)
-
-
-
-
+# Step2 _Retrieve the optimal p_value
 
 library(CVXR)
 
@@ -149,8 +89,24 @@ probleme <- Problem(Minimize(objectif), contraintes)
 resultat <- solve(probleme)
 
 # Afficher les résultats
-print(resultat$getValue(p_var))
+p_start<-resultat$getValue(p_var)
+print(p_start)
+# ici, on verifie que la somme des poids est bien ègale à 1
+print(sum(p_start))
 
-print(p+n)
-print(dim(A))
-print(dim(D_0_S_mat))
+# Step3 :  Compute the optimal solution for our estimator in the case of monotonicity constraint
+# Ici nous allons resoudre l'equation normales de notre estimateur classique mais ne remplaçant le Y par p*P
+# j'ai ajouté "_start_" à la fin des variables de scripts afin de les différencier avec celles obtnues
+# dans le modéle sans hypothèse de monotoncity
+g_hat_start<-rep(0,n)
+mats_start <- tpsmat(x)
+tmat_start <- mats_start$tmat
+emat_start <- mats_start$emat
+l_start<-0.5
+bigmativ_start <- bmat(l_start,emat_start,tmat_start,W,n)
+bigW_start <- rbind(W,pracma::zeros(2,n))
+p_startY<-p_start*Y
+bigwy_start <- c(W%*%p_startY,0,0)  # ici j'ai remplacé Y par P_start*Y
+parestiv_start <- solve(qr(bigmativ_start,LAPACK=TRUE),bigwy_start)
+g_hat_start <-  cbind(emat_start,t(tmat_start))%*%parestiv_start
+print(g_hat_start)
