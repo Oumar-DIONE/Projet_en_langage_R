@@ -1,5 +1,3 @@
-library(CVXR)
-
 # Kernel and kernel matrix
 kstand <- function(x,ker='normal',knorm="sq")
 {
@@ -90,7 +88,7 @@ fun.prime <- function(x,case=1){
          x*sqrt(2),
          sqrt(3*sqrt(3))*(1-x^2)*exp(-(x^2)/2),
          sqrt(3)*(sin(pi*x/2)+(x*pi/2)*cos(pi*x/2)),
-         4*exp(-abs(x))*ifelse(x>0,-1,1) , 
+         4*exp(-abs(x)) , 
          log(abs(x-1)+1)*ifelse(x>1,1,-1)*sqrt(10/3),
          sqrt(2)*( cos(pi*x)-pi*x*sin(pi*x) )
   )
@@ -300,7 +298,7 @@ legendre.basis.fun <- function(x,degree){
     leg.mat[m+1,] <- a
     m0 <- m0+m+1
   }
-  
+
   power.mat <- power.mat.fun(x=x,degree=degree) ## (degree+1) times n matrix of basis function:: jeneric element \psi_j(X_s) (j=row, s=col)
   legendre.basis <- t(leg.mat%*%power.mat) ## Gives the matrix \cal{X} or \cal{W} of the notes
   return(legendre.basis)
@@ -415,25 +413,3 @@ get_pstart<-function(p=2,Y=1:5,A=pracma::eye(5))
 
 
 p_start<-get_pstart()
-
-
-# ici, on verifie que la somme des poids est bien ègale à 1
-print(sum(p_start))
-
-# Step3 :  Compute the optimal solution for our estimator in the case of monotonicity constraint
-# Ici nous allons resoudre l'equation normales de notre estimateur classique mais ne remplaçant le Y par p*P
-# j'ai ajouté "_start_" à la fin des variables de scripts afin de les différencier avec celles obtnues
-# dans le modéle sans hypothèse de monotoncity
-#g_hat_start<-rep(0,n)
-#mats_start <- tpsmat(x)
-#tmat_start <- mats_start$tmat
-#emat_start <- mats_start$emat
-#l_start<-0.5
-#bigmativ_start <- bmat(l_start,emat_start,tmat_start,W,n)
-#bigW_start <- rbind(W,pracma::zeros(2,n))
-#p_startY<-p_start*Y
-#bigwy_start <- c(W%*%p_startY,0,0)  # ici j'ai remplacé Y par P_start*Y
-#parestiv_start <- solve(qr(bigmativ_start,LAPACK=TRUE),bigwy_start)
-#g_hat_start <-  cbind(emat_start,t(tmat_start))%*%parestiv_start
-#print(g_hat_start)
-
